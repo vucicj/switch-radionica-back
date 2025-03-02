@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: go_api
+    ports:
+      - "5432:5432"
