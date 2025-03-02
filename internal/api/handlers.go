@@ -29,7 +29,7 @@ type AuthService interface {
 // NewsService defines news-related operations
 type NewsService interface {
 	GetAllNews() ([]*models.News, error)
-	CreateNews(title, content string, userID uuid.UUID) (*models.News, error)
+	CreateNews(title, content, ImagePath, category string, userID uuid.UUID) (*models.News, error)
 }
 
 // NewServer initializes a Server with injected dependencies
@@ -169,7 +169,7 @@ func (s *Server) CreateNewsHandler(c *gin.Context) {
 		return
 	}
 
-	news, err := s.newsService.CreateNews(req.Title, req.Content, userID.(uuid.UUID))
+	news, err := s.newsService.CreateNews(req.Title, req.Content, req.ImagePath, req.Category, userID.(uuid.UUID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to create news: " + err.Error()})
 		return
@@ -233,6 +233,8 @@ type ErrorResponse struct {
 
 // CreateNewsRequest represents the request body for creating news
 type CreateNewsRequest struct {
-	Title   string `json:"title" binding:"required"`
-	Content string `json:"content" binding:"required"`
+	Title     string `json:"title" binding:"required"`
+	Content   string `json:"content" binding:"required"`
+	ImagePath string `json:"image_path" binding:"required"`
+	Category  string `json:"category" binding:"required"`
 }

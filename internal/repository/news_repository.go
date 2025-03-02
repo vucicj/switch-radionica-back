@@ -16,7 +16,7 @@ func NewNewsRepository(db *sql.DB) *NewsRepository {
 
 func (r *NewsRepository) GetAllNews() ([]*models.News, error) {
 	query := `
-		SELECT id, title, content, user_id, created_at
+		SELECT id, title, content,image_path,category, user_id, created_at
 		FROM news
 		ORDER BY created_at DESC
 	`
@@ -29,7 +29,7 @@ func (r *NewsRepository) GetAllNews() ([]*models.News, error) {
 	var newsList []*models.News
 	for rows.Next() {
 		news := &models.News{}
-		err := rows.Scan(&news.ID, &news.Title, &news.Content, &news.UserID, &news.CreatedAt)
+		err := rows.Scan(&news.ID, &news.Title, &news.Content, &news.ImagePath, &news.Category, &news.UserID, &news.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -40,9 +40,9 @@ func (r *NewsRepository) GetAllNews() ([]*models.News, error) {
 
 func (r *NewsRepository) CreateNews(news *models.News) error {
 	query := `
-		INSERT INTO news (id, title, content, user_id, created_at)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO news (id, title, content,image_path,category, user_id, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
-	_, err := r.db.Exec(query, news.ID, news.Title, news.Content, news.UserID, news.CreatedAt)
+	_, err := r.db.Exec(query, news.ID, news.Title, news.Content, news.ImagePath, news.Category, news.UserID, news.CreatedAt)
 	return err
 }

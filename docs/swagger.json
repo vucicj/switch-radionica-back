@@ -245,11 +245,19 @@
         "api.CreateNewsRequest": {
             "type": "object",
             "required": [
+                "category",
                 "content",
+                "image_path",
                 "title"
             ],
             "properties": {
+                "category": {
+                    "type": "string"
+                },
                 "content": {
+                    "type": "string"
+                },
+                "image_path": {
                     "type": "string"
                 },
                 "title": {
@@ -317,6 +325,9 @@
         "models.News": {
             "type": "object",
             "properties": {
+                "category": {
+                    "type": "string"
+                },
                 "content": {
                     "type": "string"
                 },
@@ -324,6 +335,9 @@
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "image_path": {
                     "type": "string"
                 },
                 "title": {

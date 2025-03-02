@@ -21,11 +21,13 @@ func (s *NewsService) GetAllNews() ([]*models.News, error) {
 	return s.repo.GetAllNews()
 }
 
-func (s *NewsService) CreateNews(title, content string, userID uuid.UUID) (*models.News, error) {
+func (s *NewsService) CreateNews(title, content, imagwePath, category string, userID uuid.UUID) (*models.News, error) {
 	news := &models.News{
 		ID:        uuid.New(),
 		Title:     title,
 		Content:   content,
+		ImagePath: imagwePath,
+		Category:  category,
 		UserID:    userID,
 		CreatedAt: time.Now(),
 	}

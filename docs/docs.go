@@ -251,11 +251,19 @@ const docTemplate = `{
         "api.CreateNewsRequest": {
             "type": "object",
             "required": [
+                "category",
                 "content",
+                "image_path",
                 "title"
             ],
             "properties": {
+                "category": {
+                    "type": "string"
+                },
                 "content": {
+                    "type": "string"
+                },
+                "image_path": {
                     "type": "string"
                 },
                 "title": {
@@ -323,6 +331,9 @@ const docTemplate = `{
         "models.News": {
             "type": "object",
             "properties": {
+                "category": {
+                    "type": "string"
+                },
                 "content": {
                     "type": "string"
                 },
@@ -330,6 +341,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "image_path": {
                     "type": "string"
                 },
                 "title": {

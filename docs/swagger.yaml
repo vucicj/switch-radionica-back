@@ -2,12 +2,18 @@ basePath: /api/v1
 definitions:
   api.CreateNewsRequest:
     properties:
+      category:
+        type: string
       content:
+        type: string
+      image_path:
         type: string
       title:
         type: string
     required:
+    - category
     - content
+    - image_path
     - title
     type: object
   api.ErrorResponse:
@@ -49,11 +55,15 @@ definitions:
     type: object
   models.News:
     properties:
+      category:
+        type: string
       content:
         type: string
       created_at:
         type: string
       id:
+        type: string
+      image_path:
         type: string
       title:
         type: string
