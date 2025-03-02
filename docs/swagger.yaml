@@ -1,5 +1,15 @@
 basePath: /
 definitions:
+  api.CreateNewsRequest:
+    properties:
+      content:
+        type: string
+      title:
+        type: string
+    required:
+    - content
+    - title
+    type: object
   api.ErrorResponse:
     properties:
       error:
@@ -32,6 +42,19 @@ definitions:
     type: object
   api.RegisterResponse:
     properties:
+      user_id:
+        type: string
+    type: object
+  models.News:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
       user_id:
         type: string
     type: object
@@ -79,6 +102,60 @@ paths:
       summary: Login a user
       tags:
       - auth
+  /news:
+    get:
+      description: Retrieves a list of all news items
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of news
+          schema:
+            items:
+              $ref: '#/definitions/models.News'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Get all news
+      tags:
+      - news
+    post:
+      consumes:
+      - application/json
+      description: Creates a new news item (requires authentication)
+      parameters:
+      - description: News details
+        in: body
+        name: news
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateNewsRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: News created successfully
+          schema:
+            $ref: '#/definitions/models.News'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new news item
+      tags:
+      - news
   /register:
     post:
       consumes:
@@ -109,4 +186,9 @@ paths:
       summary: Register a new user
       tags:
       - auth
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

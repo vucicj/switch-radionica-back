@@ -8,11 +8,11 @@ import (
 	"blazperic/radionica/config"
 	"blazperic/radionica/internal/api"
 
-	_ "blazperic/radionica/docs" // Import generated docs
+	_ "blazperic/radionica/docs"
 
 	_ "github.com/lib/pq"
-	swaggerFiles "github.com/swaggo/files"     // Swagger UI files
-	ginSwagger "github.com/swaggo/gin-swagger" // Gin middleware for Swagger
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // @title Radionica API
@@ -26,6 +26,9 @@ import (
 // @license.url https://opensource.org/licenses/MIT
 // @host localhost:8080
 // @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	cfg := config.LoadConfig()
 
@@ -42,7 +45,7 @@ func main() {
 	}
 
 	server := api.NewServer(db, cfg)
-	router := api.SetupRouter(server)
+	router := api.SetupRouter(server, cfg.JWTSecret) // Pass JWTSecret here
 
 	// Swagger endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
