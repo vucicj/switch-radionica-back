@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"blazperic/radionica/config"
@@ -15,8 +16,9 @@ import (
 
 // Server manages dependencies for HTTP handlers
 type Server struct {
-	authService AuthService
-	newsService NewsService
+	authService       AuthService
+	newsService       NewsService
+	cirriculumService CirriculumService
 }
 
 // AuthService defines authentication operations
@@ -32,15 +34,24 @@ type NewsService interface {
 	CreateNews(title, content, ImagePath, category string, userID uuid.UUID) (*models.News, error)
 }
 
+// CirriculumService defines cirriculum-related operations
+type CirriculumService interface {
+	GetAllCirriculum() ([]*models.Cirriculum, error)
+	CreateCirriculum(title, content string, week int, userID uuid.UUID) (*models.Cirriculum, error)
+}
+
 // NewServer initializes a Server with injected dependencies
 func NewServer(db *sql.DB, cfg *config.Config) *Server {
 	userRepo := repository.NewUserRepository(db)
 	authSvc := service.NewAuthService(userRepo, cfg.JWTSecret, cfg.TokenDuration, cfg.RefreshTokenDuration)
 	newsRepo := repository.NewNewsRepository(db)
 	newsSvc := service.NewNewsService(newsRepo)
+	cirriculumRepo := repository.NewCirriculumRepository(db)
+	cirriculumSvc := service.NewCirriculumService(cirriculumRepo)
 	return &Server{
-		authService: authSvc,
-		newsService: newsSvc,
+		authService:       authSvc,
+		newsService:       newsSvc,
+		cirriculumService: cirriculumSvc,
 	}
 }
 
@@ -178,6 +189,61 @@ func (s *Server) CreateNewsHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, news)
 }
 
+// GetAllCirriculumHandler retrieves all cirriculum items
+// @Summary Get all cirriculum
+// @Description Fetches a list of all cirriculum items
+// @Tags cirriculum
+// @Produce json
+// @Success 200 {array} models.Cirriculum "Cirriculum list"
+// @Failure 500 {object} ErrorResponse "Server error"
+// @Router /cirriculum [get]
+func (s *Server) GetAllCirriculumHandler(c *gin.Context) {
+	cirriculum, err := s.cirriculumService.GetAllCirriculum()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to fetch cirriculum: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, cirriculum)
+}
+
+// CreateCirriculumHandler creates a new cirriculum entry
+// @Summary Create a cirriculum
+// @Description Adds a new cirriculum (requires authentication)
+// @Tags cirriculum
+// @Accept json
+// @Produce json
+// @Param cirriculum body CreateCirriculumRequest true "Cirriculum details"
+// @Security BearerAuth
+// @Success 201 {object} models.Cirriculum "Cirriculum created"
+// @Failure 400 {object} ErrorResponse "Invalid request"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
+// @Failure 500 {object} ErrorResponse "Server error"
+// @Router /cirriculum [post]
+func (s *Server) CreateCirriculumHandler(c *gin.Context) {
+	var req CreateCirriculumRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		fmt.Println(&req)
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request payload"})
+		return
+	}
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Authentication required"})
+		return
+	}
+
+	cirriculum, err := s.cirriculumService.CreateCirriculum(req.Title, req.Description, int(req.Week), userID.(uuid.UUID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to create cirriculum: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, cirriculum)
+}
+
 // SetupRouter configures the Gin router with grouped endpoints
 func SetupRouter(server *Server, jwtSecret string) *gin.Engine {
 	r := gin.Default()
@@ -198,6 +264,13 @@ func SetupRouter(server *Server, jwtSecret string) *gin.Engine {
 		{
 			news.GET("", server.GetNewsHandler)
 			news.POST("", JWTAuth(jwtSecret), server.CreateNewsHandler)
+		}
+
+		// Cirriculum routes
+		cirriculum := apiV1.Group("/cirriculum")
+		{
+			cirriculum.GET("", server.GetAllCirriculumHandler)
+			cirriculum.POST("", JWTAuth(jwtSecret), server.CreateCirriculumHandler)
 		}
 	}
 
@@ -237,4 +310,10 @@ type CreateNewsRequest struct {
 	Content   string `json:"content" binding:"required"`
 	ImagePath string `json:"image_path" binding:"required"`
 	Category  string `json:"category" binding:"required"`
+}
+
+type CreateCirriculumRequest struct {
+	Title       string `json:"title" binding:"required"`
+	Week        int    `json:"week" binding:"required,numeric"`
+	Description string `json:"description" binding:"required"`
 }

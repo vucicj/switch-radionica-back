@@ -162,6 +162,90 @@ const docTemplate = `{
                 }
             }
         },
+        "/cirriculum": {
+            "get": {
+                "description": "Fetches a list of all cirriculum items",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cirriculum"
+                ],
+                "summary": "Get all cirriculum",
+                "responses": {
+                    "200": {
+                        "description": "Cirriculum list",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Cirriculum"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Adds a new cirriculum (requires authentication)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cirriculum"
+                ],
+                "summary": "Create a cirriculum",
+                "parameters": [
+                    {
+                        "description": "Cirriculum details",
+                        "name": "cirriculum",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.CreateCirriculumRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Cirriculum created",
+                        "schema": {
+                            "$ref": "#/definitions/models.Cirriculum"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/news": {
             "get": {
                 "description": "Fetches a list of all news items",
@@ -248,6 +332,25 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "api.CreateCirriculumRequest": {
+            "type": "object",
+            "required": [
+                "description",
+                "title",
+                "week"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "week": {
+                    "type": "integer"
+                }
+            }
+        },
         "api.CreateNewsRequest": {
             "type": "object",
             "required": [
@@ -325,6 +428,29 @@ const docTemplate = `{
             "properties": {
                 "user_id": {
                     "type": "string"
+                }
+            }
+        },
+        "models.Cirriculum": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "week": {
+                    "type": "integer"
                 }
             }
         },

@@ -26,7 +26,7 @@ func (r *NewsRepository) GetAllNews() ([]*models.News, error) {
 	}
 	defer rows.Close()
 
-	var newsList []*models.News
+	var newsList []*models.News = make([]*models.News, 0)
 	for rows.Next() {
 		news := &models.News{}
 		err := rows.Scan(&news.ID, &news.Title, &news.Content, &news.ImagePath, &news.Category, &news.UserID, &news.CreatedAt)
