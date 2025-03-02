@@ -9,15 +9,24 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/v1/api/login": {
+        "/auth/login": {
             "post": {
-                "description": "Authenticates a user and returns a JWT token",
+                "description": "Authenticates a user and returns access and refresh tokens",
                 "consumes": [
                     "application/json"
                 ],
@@ -30,7 +39,7 @@ const docTemplate = `{
                 "summary": "Login a user",
                 "parameters": [
                     {
-                        "description": "User login credentials",
+                        "description": "Login credentials",
                         "name": "credentials",
                         "in": "body",
                         "required": true,
@@ -43,7 +52,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Login successful",
                         "schema": {
-                            "$ref": "#/definitions/api.LoginResponse"
+                            "$ref": "#/definitions/service.TokenPair"
                         }
                     },
                     "400": {
@@ -61,41 +70,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/api/news": {
-            "get": {
-                "description": "Retrieves a list of all news items",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "news"
-                ],
-                "summary": "Get all news",
-                "responses": {
-                    "200": {
-                        "description": "List of news",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.News"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/api.ErrorResponse"
-                        }
-                    }
-                }
-            },
+        "/auth/refresh": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Creates a new news item (requires authentication)",
+                "description": "Generates a new access and refresh token pair using a valid refresh token",
                 "consumes": [
                     "application/json"
                 ],
@@ -103,25 +80,25 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "news"
+                    "auth"
                 ],
-                "summary": "Create a new news item",
+                "summary": "Refresh access token",
                 "parameters": [
                     {
-                        "description": "News details",
-                        "name": "news",
+                        "description": "Refresh token",
+                        "name": "refresh",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/api.CreateNewsRequest"
+                            "$ref": "#/definitions/api.RefreshRequest"
                         }
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "News created successfully",
+                    "200": {
+                        "description": "Tokens refreshed",
                         "schema": {
-                            "$ref": "#/definitions/models.News"
+                            "$ref": "#/definitions/service.TokenPair"
                         }
                     },
                     "400": {
@@ -135,19 +112,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/api.ErrorResponse"
                         }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/api.ErrorResponse"
-                        }
                     }
                 }
             }
         },
-        "/v1/api/register": {
+        "/auth/register": {
             "post": {
-                "description": "Creates a new user with the provided username and password",
+                "description": "Creates a new user with username and password",
                 "consumes": [
                     "application/json"
                 ],
@@ -171,7 +142,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "User created successfully",
+                        "description": "User created",
                         "schema": {
                             "$ref": "#/definitions/api.RegisterResponse"
                         }
@@ -183,7 +154,91 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/news": {
+            "get": {
+                "description": "Fetches a list of all news items",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "news"
+                ],
+                "summary": "Get all news",
+                "responses": {
+                    "200": {
+                        "description": "News list",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.News"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Adds a new news item (requires authentication)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "news"
+                ],
+                "summary": "Create a news item",
+                "parameters": [
+                    {
+                        "description": "News details",
+                        "name": "news",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.CreateNewsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "News created",
+                        "schema": {
+                            "$ref": "#/definitions/models.News"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
                         "schema": {
                             "$ref": "#/definitions/api.ErrorResponse"
                         }
@@ -231,10 +286,13 @@ const docTemplate = `{
                 }
             }
         },
-        "api.LoginResponse": {
+        "api.RefreshRequest": {
             "type": "object",
+            "required": [
+                "refresh_token"
+            ],
             "properties": {
-                "token": {
+                "refresh_token": {
                     "type": "string"
                 }
             }
@@ -281,18 +339,36 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "service.TokenPair": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
-	BasePath:         "",
+	Version:          "1.0",
+	Host:             "localhost:8080",
+	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "Radionica API",
+	Description:      "This is the API for the Radionica application.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

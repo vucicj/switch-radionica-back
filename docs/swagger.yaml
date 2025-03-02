@@ -1,3 +1,4 @@
+basePath: /api/v1
 definitions:
   api.CreateNewsRequest:
     properties:
@@ -24,10 +25,12 @@ definitions:
     - password
     - username
     type: object
-  api.LoginResponse:
+  api.RefreshRequest:
     properties:
-      token:
+      refresh_token:
         type: string
+    required:
+    - refresh_token
     type: object
   api.RegisterRequest:
     properties:
@@ -57,16 +60,34 @@ definitions:
       user_id:
         type: string
     type: object
+  service.TokenPair:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+host: localhost:8080
 info:
-  contact: {}
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is the API for the Radionica application.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Radionica API
+  version: "1.0"
 paths:
-  /v1/api/login:
+  /auth/login:
     post:
       consumes:
       - application/json
-      description: Authenticates a user and returns a JWT token
+      description: Authenticates a user and returns access and refresh tokens
       parameters:
-      - description: User login credentials
+      - description: Login credentials
         in: body
         name: credentials
         required: true
@@ -78,7 +99,7 @@ paths:
         "200":
           description: Login successful
           schema:
-            $ref: '#/definitions/api.LoginResponse'
+            $ref: '#/definitions/service.TokenPair'
         "400":
           description: Invalid request
           schema:
@@ -90,43 +111,26 @@ paths:
       summary: Login a user
       tags:
       - auth
-  /v1/api/news:
-    get:
-      description: Retrieves a list of all news items
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Generates a new access and refresh token pair using a valid refresh
+        token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: refresh
+        required: true
+        schema:
+          $ref: '#/definitions/api.RefreshRequest'
       produces:
       - application/json
       responses:
         "200":
-          description: List of news
+          description: Tokens refreshed
           schema:
-            items:
-              $ref: '#/definitions/models.News'
-            type: array
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/api.ErrorResponse'
-      summary: Get all news
-      tags:
-      - news
-    post:
-      consumes:
-      - application/json
-      description: Creates a new news item (requires authentication)
-      parameters:
-      - description: News details
-        in: body
-        name: news
-        required: true
-        schema:
-          $ref: '#/definitions/api.CreateNewsRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: News created successfully
-          schema:
-            $ref: '#/definitions/models.News'
+            $ref: '#/definitions/service.TokenPair'
         "400":
           description: Invalid request
           schema:
@@ -135,20 +139,14 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/api.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/api.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Create a new news item
+      summary: Refresh access token
       tags:
-      - news
-  /v1/api/register:
+      - auth
+  /auth/register:
     post:
       consumes:
       - application/json
-      description: Creates a new user with the provided username and password
+      description: Creates a new user with username and password
       parameters:
       - description: User registration details
         in: body
@@ -160,7 +158,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: User created successfully
+          description: User created
           schema:
             $ref: '#/definitions/api.RegisterResponse'
         "400":
@@ -168,10 +166,69 @@ paths:
           schema:
             $ref: '#/definitions/api.ErrorResponse'
         "500":
-          description: Internal server error
+          description: Server error
           schema:
             $ref: '#/definitions/api.ErrorResponse'
       summary: Register a new user
       tags:
       - auth
+  /news:
+    get:
+      description: Fetches a list of all news items
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: News list
+          schema:
+            items:
+              $ref: '#/definitions/models.News'
+            type: array
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Get all news
+      tags:
+      - news
+    post:
+      consumes:
+      - application/json
+      description: Adds a new news item (requires authentication)
+      parameters:
+      - description: News details
+        in: body
+        name: news
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateNewsRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: News created
+          schema:
+            $ref: '#/definitions/models.News'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a news item
+      tags:
+      - news
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

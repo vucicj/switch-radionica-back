@@ -7,6 +7,7 @@ import (
 
 	"blazperic/radionica/config"
 	"blazperic/radionica/internal/api"
+	"blazperic/radionica/internal/utils"
 
 	_ "blazperic/radionica/docs"
 
@@ -25,7 +26,7 @@ import (
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 // @host localhost:8080
-// @BasePath /
+// @BasePath /api/v1
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
@@ -44,8 +45,14 @@ func main() {
 		log.Fatal("Database ping failed:", err)
 	}
 
+	// Run migrations
+	migrationsDir := "./migrations"
+	if err := utils.RunMigrations(db, migrationsDir); err != nil {
+		log.Fatal("Failed to run migrations:", err)
+	}
+
 	server := api.NewServer(db, cfg)
-	router := api.SetupRouter(server, cfg.JWTSecret) // Pass JWTSecret here
+	router := api.SetupRouter(server, cfg.JWTSecret)
 
 	// Swagger endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
