@@ -9,22 +9,13 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "http://swagger.io/terms/",
-        "contact": {
-            "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
-        },
-        "license": {
-            "name": "MIT",
-            "url": "https://opensource.org/licenses/MIT"
-        },
+        "contact": {},
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/login": {
+        "/v1/api/login": {
             "post": {
                 "description": "Authenticates a user and returns a JWT token",
                 "consumes": [
@@ -70,7 +61,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/news": {
+        "/v1/api/news": {
             "get": {
                 "description": "Retrieves a list of all news items",
                 "produces": [
@@ -154,7 +145,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/register": {
+        "/v1/api/register": {
             "post": {
                 "description": "Creates a new user with the provided username and password",
                 "consumes": [
@@ -291,24 +282,17 @@ const docTemplate = `{
                 }
             }
         }
-    },
-    "securityDefinitions": {
-        "BearerAuth": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
-        }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
-	Host:             "localhost:8080",
-	BasePath:         "/",
+	Version:          "",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Radionica API",
-	Description:      "This is the API for the Radionica application.",
+	Title:            "",
+	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

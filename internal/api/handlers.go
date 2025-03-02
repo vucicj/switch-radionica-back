@@ -37,7 +37,7 @@ func NewServer(db *sql.DB, cfg *config.Config) *Server {
 // @Success 201 {object} RegisterResponse "User created successfully"
 // @Failure 400 {object} ErrorResponse "Invalid request"
 // @Failure 500 {object} ErrorResponse "Internal server error"
-// @Router /register [post]
+// @Router /v1/api/register [post]
 func (s *Server) RegisterHandler(c *gin.Context) {
 	var req struct {
 		Username string `json:"username" binding:"required"`
@@ -66,7 +66,7 @@ func (s *Server) RegisterHandler(c *gin.Context) {
 // @Success 200 {object} LoginResponse "Login successful"
 // @Failure 400 {object} ErrorResponse "Invalid request"
 // @Failure 401 {object} ErrorResponse "Unauthorized"
-// @Router /login [post]
+// @Router /v1/api/login [post]
 func (s *Server) LoginHandler(c *gin.Context) {
 	var req struct {
 		Username string `json:"username" binding:"required"`
@@ -92,7 +92,7 @@ func (s *Server) LoginHandler(c *gin.Context) {
 // @Produce json
 // @Success 200 {array} models.News "List of news"
 // @Failure 500 {object} ErrorResponse "Internal server error"
-// @Router /news [get]
+// @Router /v1/api/news [get]
 func (s *Server) GetNewsHandler(c *gin.Context) {
 	news, err := s.newsService.GetAllNews()
 	if err != nil {
@@ -114,7 +114,7 @@ func (s *Server) GetNewsHandler(c *gin.Context) {
 // @Failure 400 {object} ErrorResponse "Invalid request"
 // @Failure 401 {object} ErrorResponse "Unauthorized"
 // @Failure 500 {object} ErrorResponse "Internal server error"
-// @Router /news [post]
+// @Router /v1/api/news [post]
 func (s *Server) CreateNewsHandler(c *gin.Context) {
 	var req struct {
 		Title   string `json:"title" binding:"required"`
@@ -142,10 +142,11 @@ func (s *Server) CreateNewsHandler(c *gin.Context) {
 // SetupRouter configures the Gin router with all endpoints
 func SetupRouter(server *Server, jwtSecret string) *gin.Engine {
 	r := gin.Default()
-	r.POST("/register", func(c *gin.Context) { server.RegisterHandler(c) })
-	r.POST("/login", func(c *gin.Context) { server.LoginHandler(c) })
-	r.GET("/news", func(c *gin.Context) { server.GetNewsHandler(c) })
-	r.POST("/news", JWTAuth(jwtSecret), func(c *gin.Context) { server.CreateNewsHandler(c) })
+	apiGroup := r.Group("/v1/api")
+	apiGroup.POST("/register", func(c *gin.Context) { server.RegisterHandler(c) })
+	apiGroup.POST("/login", func(c *gin.Context) { server.LoginHandler(c) })
+	apiGroup.GET("/news", func(c *gin.Context) { server.GetNewsHandler(c) })
+	apiGroup.POST("/news", JWTAuth(jwtSecret), func(c *gin.Context) { server.CreateNewsHandler(c) })
 	return r
 }
 
