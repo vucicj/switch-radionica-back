@@ -1,6 +1,26 @@
 version: "3"
 
 services:
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8080
+      JWT_SECRET: mojsuperjakijwtsecret
+      TOKEN_DURATION: 15m
+      REFRESH_TOKEN_DURATION: 168h
+      DB_DRIVER: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: go_api
+
   db:
     image: postgres
     volumes:
@@ -11,3 +31,8 @@ services:
       POSTGRES_DB: go_api
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

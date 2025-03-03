@@ -18,6 +18,18 @@ type Migration struct {
 }
 
 func RunMigrations(db *sql.DB, migrationsDir string) error {
+	// Ovo će stvoriti bazu migracija ako već ne postoji
+	_, err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS migrations (
+			id SERIAL PRIMARY KEY,
+			name VARCHAR(255) UNIQUE NOT NULL,
+			applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create migrations table: %v", err)
+	}
+
 	// Ensure migrations table exists (already created in 0001)
 	files, err := ioutil.ReadDir(migrationsDir)
 	if err != nil {
