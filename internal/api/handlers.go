@@ -251,7 +251,7 @@ func SetupRouter(server *Server, jwtSecret string) *gin.Engine {
 	r := gin.Default()
 	// Create a CORS middleware instance
 	corsMiddleware := cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"}, // Explicitly allow frontend
+		AllowOrigins:     []string{"http://localhost:3000", "https://radionica.blazperic.com/"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Content-Type", "Authorization", "ngrok-skip-browser-warning"},
 		AllowCredentials: true,
