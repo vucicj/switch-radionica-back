@@ -4,12 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"time"
 
 	"blazperic/radionica/config"
 	"blazperic/radionica/internal/models"
 	"blazperic/radionica/internal/repository"
 	"blazperic/radionica/internal/service"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -247,6 +249,18 @@ func (s *Server) CreateCirriculumHandler(c *gin.Context) {
 // SetupRouter configures the Gin router with grouped endpoints
 func SetupRouter(server *Server, jwtSecret string) *gin.Engine {
 	r := gin.Default()
+	// Create a CORS middleware instance
+	corsMiddleware := cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"}, // Explicitly allow frontend
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type", "Authorization", "ngrok-skip-browser-warning"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+		ExposeHeaders:    []string{"Content-Length", "X-Content-Type-Options", "X-Frame-Options", "X-XSS-Protection", "Access-Control-Allow-Credentials"},
+	})
+
+	// Wrap the Gin engine with the CORS middleware
+	r.Use(corsMiddleware)
 
 	// API version 1 group
 	apiV1 := r.Group("/api/v1")
