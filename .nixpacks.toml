@@ -1,0 +1,5 @@
+[phases.build]
+cmd = "go build -o radionica cmd/radionica/main.go"
+
+[phases.start]
+cmd = "./radionica"
