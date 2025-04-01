@@ -1,5 +1,10 @@
+[phases.setup]
+nixPkgs = ["go"]
+
+
 [phases.build]
-cmd = "go build -o radionica cmd/radionica/main.go"
+cmd = "cd cmd/radionica && go build -o radionica main.go"
 
 [phases.start]
-cmd = "./radionica"
+cmd = "./cmd/radionica"
+
